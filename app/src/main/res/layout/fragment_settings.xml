@@ -18,19 +18,52 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/snoozeInput"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_snooze"
-            android:inputType="number" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <EditText
-            android:id="@+id/alertDelayInput"
+            <TextView
+                android:id="@+id/snoozeLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:labelFor="@id/snoozeInput"
+                android:text="@string/hint_snooze"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/snoozeInput"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:importantForAutofill="no" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_alert_delay"
-            android:inputType="number" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/alertDelayLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:labelFor="@id/alertDelayInput"
+                android:text="@string/hint_alert_delay"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/alertDelayInput"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:importantForAutofill="no" />
+        </LinearLayout>
 
         <Switch
             android:id="@+id/alertEnabledSwitch"
