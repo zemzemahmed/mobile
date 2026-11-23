@@ -1,0 +1,6 @@
+<resources>
+
+    <!-- One simple theme for the whole app. -->
+    <style name="Theme.MediReminder" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+
+</resources>

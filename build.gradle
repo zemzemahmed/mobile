@@ -1,0 +1,4 @@
+// The Android Gradle Plugin is the tool that builds Android apps.
+plugins {
+    id 'com.android.application' version '8.6.1' apply false
+}

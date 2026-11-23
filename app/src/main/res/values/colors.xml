@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="status_taken">#2E7D32</color>
+    <color name="status_missed">#C62828</color>
+    <color name="status_snoozed">#EF6C00</color>
+    <color name="status_upcoming">#1565C0</color>
+    <color name="low_stock">#C62828</color>
+</resources>
