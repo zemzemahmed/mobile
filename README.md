@@ -2,6 +2,10 @@
 
 A simple Android app that reminds you to take medicines. It is a school project, written in plain Java with beginner-friendly, commented code.
 
+Repository: https://github.com/zemzemahmed/mobile.git
+
+The launcher icon is generated from `mobile.jpg` (on the Desktop) in all Android densities.
+
 ## What it does
 
 - Add / edit / pause / delete medicines.

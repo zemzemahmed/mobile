@@ -13,7 +13,7 @@ caregivers. Data in Room; settings in SharedPreferences; architecture = simple M
 
 ## 2. Confirmed setup (from user, before coding)
 
-- **No git in this project.** `CONTEXT.md` is the only handoff/memory file; update it after each part.
+- **No git during development.** `CONTEXT.md` was the handoff/memory file. **Changed at the end by user request:** the project was initialized as a Git repo and pushed to `https://github.com/zemzemahmed/mobile.git` (private repo, branch `main`).
 - Android Studio stable `2026.2.2.10` installed via winget. SDK at `C:\Users\zemze\AppData\Local\Android\Sdk` (platform-tools, platforms;android-34, build-tools;34.0.0, USB driver).
 - Testing on a **physical Android phone over USB**, Developer options + USB debugging already enabled.
 - App name `MediReminder`, package `com.example.medireminder`.
@@ -139,6 +139,7 @@ Tests passed from spec checklist (numbers):
 - Build result: repeated **BUILD SUCCESSFUL** (`gradlew.bat assembleDebug`). Final install: `adb install -r` → **Success** on device `5200f6b742c416d7`.
 - Known shortcuts: SMS permission is requested with an explanation; exact-alarm permission opens system settings with an explanation. No foreground service, no French, no TTS/widget/PDF/Telegram (documented in README). History rows use text instead of a separate day-header view. Room DB stays version 1.
 - Spec checklist coverage: all 14 acceptance paths are implemented in code; **not yet confirmed by the user on the phone** after the final install.
+- Final user request: changed the launcher icon to `C:\Users\zemze\Desktop\mobile.jpg` (center-cropped and generated into `mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}/ic_launcher.png` + `ic_launcher_round.png`), declared `android:icon` / `android:roundIcon` in the manifest, rebuilt (`BUILD SUCCESSFUL`) and reinstalled on the phone (`Success`), then initialized Git and pushed to `https://github.com/zemzemahmed/mobile.git` on branch `main` (private repo; signed in with Git Credential Manager account `zemzemahmed`). Added `.gitignore` so `local.properties`, `.gradle/` and `build/` are not uploaded.
 
 ### How to test on the physical phone (USB)
 
