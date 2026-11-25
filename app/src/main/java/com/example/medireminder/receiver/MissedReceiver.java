@@ -4,22 +4,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.example.medireminder.data.entity.Caregiver;
 import com.example.medireminder.data.entity.DoseLog;
 import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
-import com.example.medireminder.data.repository.CaregiverRepository;
 import com.example.medireminder.data.repository.DoseLogRepository;
 import com.example.medireminder.data.repository.MedicineRepository;
+import com.example.medireminder.service.AlarmForegroundService;
 import com.example.medireminder.util.AlarmScheduler;
 import com.example.medireminder.util.AppExecutor;
-import com.example.medireminder.util.NotificationHelper;
-import com.example.medireminder.util.PreferencesHelper;
-import com.example.medireminder.util.SmsHelper;
 
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
-/** Fired X minutes after a dose if the user never tapped Taken. */
+/** Backup fired after the alarm screen times out: makes sure the dose is logged MISSED. */
 public class MissedReceiver extends BroadcastReceiver {
 
     @Override
@@ -38,7 +36,7 @@ public class MissedReceiver extends BroadcastReceiver {
             DoseLog log = logs.findDose(scheduleId, scheduledTime);
             if (log != null && (DoseLog.STATUS_TAKEN.equals(log.status)
                     || DoseLog.STATUS_MISSED.equals(log.status))) {
-                return; // already handled by the alarm screen or a previous backup run
+                return; // already handled by the alarm screen
             }
 
             Schedule schedule = medicines.getScheduleById(scheduleId);
@@ -60,13 +58,9 @@ public class MissedReceiver extends BroadcastReceiver {
                 logs.updateLogSync(log);
             }
 
-            NotificationHelper.dismiss(appContext, scheduledTime);
-
-            if (new PreferencesHelper(appContext).isAlertEnabled()) {
-                List<Caregiver> caregivers =
-                        new CaregiverRepository(appContext).getAllCaregiversSync();
-                SmsHelper.sendMissedAlert(appContext, medicine, schedule, scheduledTime, caregivers);
-            }
+            String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(scheduledTime));
+            AlarmForegroundService.doseMissed(appContext, medicine.name + " at " + time);
         });
     }
 }

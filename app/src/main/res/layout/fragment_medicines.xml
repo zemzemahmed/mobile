@@ -29,11 +29,7 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/caregiversButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/caregivers_button" />
+
         </LinearLayout>
 
         <!-- Shown only when Room has no medicines yet. -->

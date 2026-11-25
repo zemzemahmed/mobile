@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.medireminder.R;
 import com.example.medireminder.ui.activity.AddEditMedicineActivity;
-import com.example.medireminder.ui.activity.CaregiversActivity;
 import com.example.medireminder.data.entity.MedicineWithSchedules;
 import com.example.medireminder.data.repository.MedicineRepository;
 import com.example.medireminder.ui.adapter.MedicineAdapter;
@@ -47,8 +46,6 @@ public class MedicinesFragment extends Fragment implements MedicineAdapter.OnMed
         adapter = new MedicineAdapter(this);
         recycler.setAdapter(adapter);
 
-        view.findViewById(R.id.caregiversButton).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), CaregiversActivity.class)));
 
         view.findViewById(R.id.addMedicineFab).setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), AddEditMedicineActivity.class);

@@ -3,23 +3,22 @@ package com.example.medireminder.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/** Settings are stored in one small SharedPreferences file. */
+/** Settings and the persistent notification text are stored in one small SharedPreferences file. */
 public class PreferencesHelper {
 
     private static final String FILE_NAME = "medireminder_prefs";
-    public static final String KEY_ALERT_ENABLED = "alert_enabled";
     public static final String KEY_RINGTONE = "ringtone_uri";
     public static final String KEY_DARK_MODE = "dark_mode";
     public static final String KEY_LARGE_TEXT = "large_text";
+
+    private static final String KEY_NOTIFY_TITLE = "notify_title";
+    private static final String KEY_NOTIFY_TEXT = "notify_text";
+    private static final String KEY_NOTIFY_TIME = "notify_time";
 
     private final SharedPreferences prefs;
 
     public PreferencesHelper(Context context) {
         prefs = context.getApplicationContext().getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
-    }
-
-    public boolean isAlertEnabled() {
-        return prefs.getBoolean(KEY_ALERT_ENABLED, true);
     }
 
     public String getRingtoneUri() {
@@ -32,6 +31,26 @@ public class PreferencesHelper {
 
     public boolean isLargeText() {
         return prefs.getBoolean(KEY_LARGE_TEXT, false);
+    }
+
+    public String getNotificationTitle() {
+        return prefs.getString(KEY_NOTIFY_TITLE, "MediReminder is active");
+    }
+
+    public String getNotificationText() {
+        return prefs.getString(KEY_NOTIFY_TEXT, "Tap to open MediReminder.");
+    }
+
+    public long getNotificationTime() {
+        return prefs.getLong(KEY_NOTIFY_TIME, -1);
+    }
+
+    public void saveNotification(String title, String text, long scheduledTime) {
+        prefs.edit()
+                .putString(KEY_NOTIFY_TITLE, title)
+                .putString(KEY_NOTIFY_TEXT, text)
+                .putLong(KEY_NOTIFY_TIME, scheduledTime)
+                .apply();
     }
 
     public void saveBoolean(String key, boolean value) {

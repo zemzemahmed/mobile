@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.medireminder.R;
+import com.example.medireminder.service.AlarmForegroundService;
 import com.example.medireminder.ui.fragment.HistoryFragment;
 import com.example.medireminder.ui.fragment.HomeFragment;
 import com.example.medireminder.ui.fragment.MedicinesFragment;
@@ -57,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
+        // Keep one ongoing notification and allow the alarm screen to open from the background.
+        AlarmForegroundService.start(this);
         PermissionHelper.requestAll(this);
     }
 

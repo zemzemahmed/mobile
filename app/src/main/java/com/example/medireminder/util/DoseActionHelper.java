@@ -2,16 +2,18 @@ package com.example.medireminder.util;
 
 import android.content.Context;
 
-import com.example.medireminder.data.entity.Caregiver;
 import com.example.medireminder.data.entity.DoseLog;
 import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
-import com.example.medireminder.data.repository.CaregiverRepository;
 import com.example.medireminder.data.repository.DoseLogRepository;
 import com.example.medireminder.data.repository.MedicineRepository;
+import com.example.medireminder.service.AlarmForegroundService;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /** Shared logic for the alarm screen and the Home "Taken" button. */
 public final class DoseActionHelper {
@@ -19,7 +21,7 @@ public final class DoseActionHelper {
     private DoseActionHelper() {
     }
 
-    /** Marks the dose as taken and subtracts one dose from the stock. */
+    /** Marks the dose as taken, subtracts stock, and restores the ongoing notification. */
     public static void takeDose(Context context, long[] scheduleIds, long scheduledTime) {
         AppExecutor.database().execute(() -> {
             MedicineRepository medicines = new MedicineRepository(context);
@@ -54,22 +56,25 @@ public final class DoseActionHelper {
 
                 AlarmScheduler.cancelMissed(context, scheduleId);
             }
-            NotificationHelper.dismiss(context, scheduledTime);
+            AlarmForegroundService.doseTaken(context);
         });
     }
 
-    /** Called when the 5-second alarm screen times out: log MISSED and alert caregivers now. */
+    /** Called after the 15-second alarm screen times out: log MISSED and keep the notification. */
     public static void markMissedNow(Context context, long[] scheduleIds, long scheduledTime) {
         AppExecutor.database().execute(() -> {
             MedicineRepository medicines = new MedicineRepository(context);
             DoseLogRepository logs = new DoseLogRepository(context);
-            List<Medicine> missedMedicines = new ArrayList<>();
-            List<Schedule> missedSchedules = new ArrayList<>();
+            List<String> names = new ArrayList<>();
 
             for (long scheduleId : scheduleIds) {
                 Schedule schedule = medicines.getScheduleById(scheduleId);
                 if (schedule == null) {
                     continue;
+                }
+                Medicine medicine = medicines.getMedicineById(schedule.medicineId);
+                if (medicine != null) {
+                    names.add(medicine.name);
                 }
                 DoseLog log = logs.findDose(scheduleId, scheduledTime);
                 if (log != null && (DoseLog.STATUS_TAKEN.equals(log.status)
@@ -85,25 +90,19 @@ public final class DoseActionHelper {
                     log.actualTime = 0;
                     logs.updateLogSync(log);
                 }
-
-                Medicine medicine = medicines.getMedicineById(schedule.medicineId);
-                if (medicine != null) {
-                    missedMedicines.add(medicine);
-                    missedSchedules.add(schedule);
-                }
-                // Cancel only the backup missed timer. The next reminder is already scheduled
-                // under the reminder request code and must stay alive.
                 AlarmScheduler.cancelMissed(context, scheduleId);
             }
 
-            NotificationHelper.dismiss(context, scheduledTime);
-
-            if (new PreferencesHelper(context).isAlertEnabled()) {
-                List<Caregiver> caregivers =
-                        new CaregiverRepository(context).getAllCaregiversSync();
-                SmsHelper.sendMissedAlerts(context, missedMedicines, missedSchedules,
-                        scheduledTime, caregivers);
-            }
+            String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(new Date(scheduledTime));
+            AlarmForegroundService.doseMissed(context, joinNames(names) + " at " + time);
         });
+    }
+
+    private static String joinNames(List<String> names) {
+        if (names.isEmpty()) {
+            return "Dose";
+        }
+        return android.text.TextUtils.join(", ", names);
     }
 }

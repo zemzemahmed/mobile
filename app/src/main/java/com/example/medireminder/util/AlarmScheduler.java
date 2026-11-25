@@ -11,6 +11,8 @@ import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
 import com.example.medireminder.data.repository.MedicineRepository;
 import com.example.medireminder.receiver.AlarmReceiver;
+import com.example.medireminder.ui.activity.AlarmActivity;
+import com.example.medireminder.ui.activity.MainActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,8 +31,8 @@ public final class AlarmScheduler {
     public static final String EXTRA_SCHEDULED_TIME = "scheduledTime";
 
     private static final int MISSED_OFFSET = 100000;
-    /** Backup check: the alarm screen itself times out after 5 seconds, this runs at 6. */
-    private static final long MISSED_DELAY_MS = 6000L;
+    /** Backup check: the alarm screen times out after 15 seconds, this runs at 16. */
+    private static final long MISSED_DELAY_MS = 16000L;
 
     private AlarmScheduler() {
     }
@@ -82,12 +84,18 @@ public final class AlarmScheduler {
             return;
         }
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(EXTRA_SCHEDULE_ID, schedule.id);
-        intent.putExtra(EXTRA_SCHEDULED_TIME, nextTime);
-        PendingIntent pending = PendingIntent.getBroadcast(context, (int) schedule.id, intent,
+        // AlarmManager itself opens AlarmActivity. Samsung allows this even while the app is in background.
+        Intent alarmIntent = new Intent(context, AlarmActivity.class);
+        alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        alarmIntent.putExtra(EXTRA_SCHEDULE_ID, schedule.id);
+        alarmIntent.putExtra(EXTRA_SCHEDULED_TIME, nextTime);
+        PendingIntent operation = PendingIntent.getActivity(context, (int) schedule.id, alarmIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextTime, pending);
+
+        Intent showIntent = new Intent(context, MainActivity.class);
+        PendingIntent show = PendingIntent.getActivity(context, 900000 + (int) schedule.id, showIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        manager.setAlarmClock(new AlarmManager.AlarmClockInfo(nextTime, show), operation);
     }
 
     public static void scheduleMissedCheck(Context context, long scheduleId, long scheduledTime) {

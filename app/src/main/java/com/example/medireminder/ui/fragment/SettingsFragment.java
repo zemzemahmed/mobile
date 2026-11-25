@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
 import com.example.medireminder.R;
-import com.example.medireminder.ui.activity.CaregiversActivity;
 import com.example.medireminder.util.AlarmScheduler;
 import com.example.medireminder.util.PreferencesHelper;
 
@@ -26,7 +25,6 @@ public class SettingsFragment extends Fragment {
     private static final int REQUEST_RINGTONE = 300;
 
     private PreferencesHelper prefs;
-    private Switch alertSwitch;
     private Switch darkSwitch;
     private Switch largeTextSwitch;
 
@@ -37,11 +35,9 @@ public class SettingsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
         prefs = new PreferencesHelper(requireContext());
 
-        alertSwitch = view.findViewById(R.id.alertEnabledSwitch);
         darkSwitch = view.findViewById(R.id.darkModeSwitch);
         largeTextSwitch = view.findViewById(R.id.largeTextSwitch);
 
-        alertSwitch.setChecked(prefs.isAlertEnabled());
         darkSwitch.setChecked(prefs.isDarkMode());
         largeTextSwitch.setChecked(prefs.isLargeText());
 
@@ -56,9 +52,6 @@ public class SettingsFragment extends Fragment {
             startActivityForResult(intent, REQUEST_RINGTONE);
         });
 
-        view.findViewById(R.id.caregiversSettingsButton).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), CaregiversActivity.class)));
-
         view.findViewById(R.id.rescheduleButton).setOnClickListener(v -> {
             AlarmScheduler.rescheduleAll(requireContext());
             Toast.makeText(requireContext(), R.string.alarms_rebuilt, Toast.LENGTH_SHORT).show();
@@ -69,7 +62,6 @@ public class SettingsFragment extends Fragment {
     }
 
     private void saveSettings() {
-        prefs.saveBoolean(PreferencesHelper.KEY_ALERT_ENABLED, alertSwitch.isChecked());
         prefs.saveBoolean(PreferencesHelper.KEY_DARK_MODE, darkSwitch.isChecked());
         prefs.saveBoolean(PreferencesHelper.KEY_LARGE_TEXT, largeTextSwitch.isChecked());
 

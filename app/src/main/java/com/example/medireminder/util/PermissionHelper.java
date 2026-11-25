@@ -19,7 +19,7 @@ import com.example.medireminder.R;
 public final class PermissionHelper {
 
     public static final int REQUEST_NOTIFICATIONS = 100;
-    public static final int REQUEST_SMS = 101;
+    public static final int REQUEST_OVERLAY = 101;
 
     private PermissionHelper() {
     }
@@ -39,14 +39,16 @@ public final class PermissionHelper {
                     .show();
         }
 
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
+        // Samsung blocks activities started from the background, so the alarm also uses an overlay.
+        if (!Settings.canDrawOverlays(activity)) {
             new AlertDialog.Builder(activity)
-                    .setTitle(R.string.permission_sms_title)
-                    .setMessage(R.string.permission_sms_message)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) ->
-                            activity.requestPermissions(
-                                    new String[]{Manifest.permission.SEND_SMS}, REQUEST_SMS))
+                    .setTitle(R.string.permission_overlay_title)
+                    .setMessage(R.string.permission_overlay_message)
+                    .setPositiveButton(R.string.open_settings, (dialog, which) -> {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                        intent.setData(Uri.parse("package:" + activity.getPackageName()));
+                        activity.startActivityForResult(intent, REQUEST_OVERLAY);
+                    })
                     .setNegativeButton(android.R.string.cancel, null)
                     .show();
         }

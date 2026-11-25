@@ -4,9 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.example.medireminder.service.AlarmForegroundService;
 import com.example.medireminder.util.AlarmScheduler;
 
-/** Restores all alarms after the phone boots. */
+/** Restores all alarms and the ongoing notification after the phone boots. */
 public class BootReceiver extends BroadcastReceiver {
 
     @Override
@@ -16,6 +17,7 @@ public class BootReceiver extends BroadcastReceiver {
         }
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())
                 || "android.intent.action.QUICKBOOT_POWERON".equals(intent.getAction())) {
+            AlarmForegroundService.start(context.getApplicationContext());
             AlarmScheduler.rescheduleAll(context.getApplicationContext());
         }
     }

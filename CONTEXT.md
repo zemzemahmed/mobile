@@ -187,3 +187,17 @@ Fix added:
 Verified with a forced alarm while the app was already open: `AlarmActivity` became the resumed activity. Manual `am broadcast` while the app was force-stopped is still blocked by Samsung's background-start policy, but a real AlarmManager-originated alarm should be whitelisted. User must retest with a real 1-2 minute alarm.
 
 Current pushed commit before this follow-up: `6b57741`. Commit this fix after user confirms, or now with a note that real-device retest is pending.
+## 10. Final follow-up — visible alarm, 15 seconds, no SMS, persistent notification
+
+User reported the alarm screen still did not appear and asked for: 15-second timeout instead of 5, remove all caregiver/SMS logic, and keep one persistent notification that never disappears.
+
+Changes made and verified on the phone:
+- Timeout is now 15 s (`AlarmActivity.TIMEOUT_MS`, `AlarmScheduler.MISSED_DELAY_MS = 16000`).
+- All SMS/caregiver sending code removed: deleted `SmsHelper`, `CaregiversActivity`, `CaregiverAdapter`, caregiver layouts and UI buttons; removed `SEND_SMS` permission and the SMS/alert switches. The legacy Room `caregivers` table remains only so no DB migration is needed.
+- `AlarmForegroundService` is now persistent (`START_STICKY`) and keeps one ongoing notification with fixed id `900001`. Status is stored in `PreferencesHelper` (`TIME TO TAKE YOUR MEDICINE` → `MISSED DOSE` → `MediReminder is active` after Taken). Old notification ids from earlier builds are cleared on app start.
+- `AlarmScheduler` uses `AlarmManager.setAlarmClock` with an activity PendingIntent to `AlarmActivity`.
+- Samsung still refused to bring that activity to the foreground while the app was in the background, so added a full-screen overlay (`AlarmOverlay` + `view_alarm_overlay.xml`) shown by the foreground service. It requires `SYSTEM_ALERT_WINDOW`; `PermissionHelper` asks for it on first run.
+- Real-device verification: with the app in the background, a real AlarmManager alarm at 21:55 opened the overlay (`uiautomator` found `TIME TO TAKE YOUR MEDICINE`), and after 15 s `dose_logs` contained `scheduleId=999, status=MISSED`. Notification id `900001` remained with title `MISSED DOSE`.
+- Test schedule 999 was removed from the user's DB after verification. The user's real schedule 3 was left intact.
+
+Current pushed commit before this final follow-up: `634f396`. Commit these changes after the final build/install.
