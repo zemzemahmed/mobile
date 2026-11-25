@@ -44,7 +44,7 @@
 
     <string name="error_name_required">Please enter a name.</string>
     <string name="error_at_least_one_alarm">Please add at least one alarm.</string>
-    <string name="error_date_format">Dates must be written as YYYY-MM-DD.</string>
+    <string name="error_date_format">Please pick the date again from the calendar (YYYY-MM-DD).</string>
     <string name="error_end_before_start">End date cannot be before start date.</string>
     <string name="error_stock">Please enter a valid stock (0 or more).</string>
     <string name="saved_message">Medicine saved</string>

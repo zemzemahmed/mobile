@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,7 +50,8 @@ public class AddEditMedicineActivity extends AppCompatActivity {
     private long medicineId;
     private final List<AlarmRow> alarmRows = new ArrayList<>();
     private final List<Schedule> existingSchedules = new ArrayList<>();
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    // Locale.US keeps the stored format as plain digits: YYYY-MM-DD on every phone.
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +81,7 @@ public class AddEditMedicineActivity extends AppCompatActivity {
 
         if (medicineId == 0) {
             setTitle(R.string.add_medicine_title);
-            startDateInput.setText(dateFormat.format(Calendar.getInstance().getTime()));
+            startDateInput.setText(todayString());
             addAlarmRow(8, 0, 1.0, null);   // one default alarm at 08:00, every day
         } else {
             setTitle(R.string.edit_medicine_title);
@@ -179,13 +181,19 @@ public class AddEditMedicineActivity extends AppCompatActivity {
 
         String startDate = startDateInput.getText().toString().trim();
         String endDate = endDateInput.getText().toString().trim();
+        if (startDate.isEmpty()) {
+            startDate = todayString();          // start date always has a real value
+            startDateInput.setText(startDate);
+        }
+
         long startMillis = parseDateOrError(startDate);
-        long endMillis = parseDateOrError(endDate);
-        if (startMillis == Long.MIN_VALUE || endMillis == Long.MIN_VALUE) {
+        // Empty end date is allowed; only a non-empty but invalid value is an error.
+        long endMillis = endDate.isEmpty() ? Long.MIN_VALUE : parseDateOrError(endDate);
+        if (startMillis == Long.MIN_VALUE || (!endDate.isEmpty() && endMillis == Long.MIN_VALUE)) {
             Toast.makeText(this, R.string.error_date_format, Toast.LENGTH_SHORT).show();
             return;
         }
-        if (startMillis != Long.MIN_VALUE && endMillis != Long.MIN_VALUE && endMillis < startMillis) {
+        if (endMillis != Long.MIN_VALUE && endMillis < startMillis) {
             Toast.makeText(this, R.string.error_end_before_start, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -229,7 +237,8 @@ public class AddEditMedicineActivity extends AppCompatActivity {
 
     /** Opens a calendar and writes the chosen day as YYYY-MM-DD. */
     private void showDatePicker(final EditText target) {
-        Calendar calendar = Calendar.getInstance();
+        // GregorianCalendar matches DatePickerDialog's year/month/day values.
+        Calendar calendar = new GregorianCalendar();
         String current = target.getText().toString().trim();
         if (!current.isEmpty()) {
             try {
@@ -240,14 +249,20 @@ public class AddEditMedicineActivity extends AppCompatActivity {
         }
 
         new DatePickerDialog(this,
-                (picker, year, month, dayOfMonth) -> {
-                    Calendar chosen = Calendar.getInstance();
-                    chosen.set(year, month, dayOfMonth);
-                    target.setText(dateFormat.format(chosen.getTime()));
-                },
+                (picker, year, month, dayOfMonth) ->
+                        target.setText(String.format(Locale.US, "%04d-%02d-%02d",
+                                year, month + 1, dayOfMonth)),
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private String todayString() {
+        Calendar today = new GregorianCalendar();
+        return String.format(Locale.US, "%04d-%02d-%02d",
+                today.get(Calendar.YEAR),
+                today.get(Calendar.MONTH) + 1,
+                today.get(Calendar.DAY_OF_MONTH));
     }
 
     private long parseDateOrError(String value) {
