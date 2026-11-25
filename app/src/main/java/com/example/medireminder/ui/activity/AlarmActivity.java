@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.medireminder.R;
 import com.example.medireminder.util.DoseActionHelper;
-import com.example.medireminder.util.NotificationHelper;
+
 
 /** Full-screen alarm shown when a dose is due. Taken, or missed after 5 seconds. */
 public class AlarmActivity extends AppCompatActivity {
@@ -46,8 +46,6 @@ public class AlarmActivity extends AppCompatActivity {
             return;
         }
 
-        // The notification started the sound; the screen is now in charge.
-        NotificationHelper.dismiss(getApplicationContext(), scheduledTime);
 
         TextView doseView = findViewById(R.id.alarmDoseText);
         TextView countdownView = findViewById(R.id.alarmCountdownText);
