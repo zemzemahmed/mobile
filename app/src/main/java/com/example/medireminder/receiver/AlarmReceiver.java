@@ -4,12 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.core.content.ContextCompat;
+
 import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
 import com.example.medireminder.data.repository.MedicineRepository;
+import com.example.medireminder.service.AlarmForegroundService;
 import com.example.medireminder.util.AlarmScheduler;
 import com.example.medireminder.util.AppExecutor;
-import com.example.medireminder.util.NotificationHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,7 +61,12 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
             text.append("\nat ").append(time);
 
-            NotificationHelper.showAlarm(appContext, scheduleIds, scheduledTime, text.toString());
+            // A foreground service is allowed to open the alarm activity even while the app is in the background.
+            Intent serviceIntent = new Intent(appContext, AlarmForegroundService.class);
+            serviceIntent.putExtra(AlarmForegroundService.EXTRA_SCHEDULE_IDS, scheduleIds);
+            serviceIntent.putExtra(AlarmForegroundService.EXTRA_SCHEDULED_TIME, scheduledTime);
+            serviceIntent.putExtra(AlarmForegroundService.EXTRA_DOSE_TEXT, text.toString());
+            ContextCompat.startForegroundService(appContext, serviceIntent);
 
             // Backup in case the alarm screen is closed before it can handle the timeout.
             AlarmScheduler.scheduleMissedCheck(appContext, scheduleId, scheduledTime);

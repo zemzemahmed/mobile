@@ -16,7 +16,7 @@ import com.example.medireminder.R;
 import com.example.medireminder.receiver.ActionReceiver;
 import com.example.medireminder.ui.activity.AlarmActivity;
 
-/** Builds the alarm notification and its full-screen Take/Missed screen. */
+/** Builds the alarm notification that starts the full-screen Take/Missed screen. */
 public final class NotificationHelper {
 
     public static final String CHANNEL_ID = "medireminder_reminders";
@@ -41,12 +41,9 @@ public final class NotificationHelper {
         }
     }
 
-    /** Called when an alarm fires. The full-screen intent opens AlarmActivity even on the lock screen. */
-    public static void showAlarm(Context context, long[] scheduleIds, long scheduledTime, String doseText) {
-        if (scheduleIds == null || scheduleIds.length == 0) {
-            return;
-        }
-
+    /** Builds the notification. Also used by AlarmForegroundService via startForeground(). */
+    public static Notification buildAlarmNotification(Context context, long[] scheduleIds,
+                                                      long scheduledTime, String doseText) {
         int id = notificationId(scheduledTime);
         Intent alarmIntent = new Intent(context, AlarmActivity.class);
         alarmIntent.putExtra(AlarmActivity.EXTRA_SCHEDULE_IDS, scheduleIds);
@@ -64,7 +61,7 @@ public final class NotificationHelper {
         String savedSound = new PreferencesHelper(context).getRingtoneUri();
         Uri sound = savedSound.isEmpty() ? Settings.System.DEFAULT_ALARM_ALERT_URI : Uri.parse(savedSound);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        return new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(context.getString(R.string.notification_title))
                 .setContentText(doseText == null ? "" : doseText.replace("\n", ", "))
@@ -78,12 +75,17 @@ public final class NotificationHelper {
                 .setSound(sound)
                 .setVibrate(new long[]{0, 500, 500})
                 .addAction(android.R.drawable.checkbox_on_background,
-                        context.getString(R.string.action_taken), taken);
+                        context.getString(R.string.action_taken), taken)
+                .build();
+    }
 
+    /** Fallback for devices where the foreground service cannot be started. */
+    public static void showAlarm(Context context, long[] scheduleIds, long scheduledTime, String doseText) {
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) {
-            manager.notify(id, builder.build());
+            manager.notify(notificationId(scheduledTime),
+                    buildAlarmNotification(context, scheduleIds, scheduledTime, doseText));
         }
     }
 
@@ -95,7 +97,7 @@ public final class NotificationHelper {
         }
     }
 
-    private static int notificationId(long scheduledTime) {
+    public static int notificationId(long scheduledTime) {
         // One id per minute: doses at the same time replace each other -> one alarm.
         return NOTIFICATION_TAG + (int) (scheduledTime / 60000);
     }

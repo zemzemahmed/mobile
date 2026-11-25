@@ -174,3 +174,16 @@ What changed:
 Build/install status after this change: `BUILD SUCCESSFUL`, `adb install -r` -> `Success`, app launched. Pushed to `https://github.com/zemzemahmed/mobile.git` on branch `main`.
 
 User must retest: set a medicine alarm 1-2 minutes ahead, add a caregiver phone number, then confirm the full-screen alarm appears, **Taken** works, and doing nothing for 5 seconds produces Missed + SMS. There is no debug short-delay setting anymore.
+## 9. Follow-up fix — force the alarm screen with a foreground service
+
+User reported that a real alarm still showed only a notification. Android 10+ blocks `startActivity()` from a background receiver, and full-screen intents only launch the activity when the screen is idle/locked.
+
+Fix added:
+- New `service/AlarmForegroundService.java`: started by `AlarmReceiver` with `ContextCompat.startForegroundService`. It posts the same alarm notification via `startForeground()` (with `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_MEDIA_PLAYBACK` permissions declared), then opens `AlarmActivity`. It stops itself after ~6.3 seconds.
+- `NotificationHelper` now exposes `buildAlarmNotification()` and `notificationId()` for the service; `showAlarm()` remains as a fallback.
+- `AlarmReceiver` starts the service instead of calling `showAlarm()` directly.
+- Manifest declares the service with `foregroundServiceType="mediaPlayback"`.
+
+Verified with a forced alarm while the app was already open: `AlarmActivity` became the resumed activity. Manual `am broadcast` while the app was force-stopped is still blocked by Samsung's background-start policy, but a real AlarmManager-originated alarm should be whitelisted. User must retest with a real 1-2 minute alarm.
+
+Current pushed commit before this follow-up: `6b57741`. Commit this fix after user confirms, or now with a note that real-device retest is pending.

@@ -24,7 +24,7 @@ The launcher icon is generated from `mobile.jpg` (on the Desktop) in all Android
 - Java 17, Android SDK 34 (minSdk 24).
 - Room for local storage (`medireminder.db`), LiveData for UI updates.
 - A single-thread `ExecutorService` (`AppExecutor`) for all database work — no coroutines.
-- `AlarmManager` + `BroadcastReceiver` + a high-priority notification with a **full-screen intent**; no foreground service (skipped on purpose).
+- `AlarmManager` + `BroadcastReceiver` + a short-lived foreground service + a high-priority notification with a **full-screen intent**.
 
 ## Build
 
@@ -78,7 +78,7 @@ The app asks for:
 - **Notifications** (Android 13+) — needed to show the full-screen dose alarm.
 - **SMS** — needed only to alert caregivers. SMS may be billed by your operator. If you deny it, the app still works and simply does not send SMS.
 - **Exact alarms** (Android 12+) — tap **Open settings** and allow it; otherwise alarms may be late.
-- Full-screen alarms use Android's `USE_FULL_SCREEN_INTENT` permission (granted to alarm apps).
+- Full-screen alarms use Android's `USE_FULL_SCREEN_INTENT` permission (granted to alarm apps), plus a short-lived foreground service so the alarm screen can open even while the app is in the background.
 
 After allowing exact alarms, come back to the app: alarms are rebuilt automatically. You can also use **Settings → Rebuild all alarms**.
 
@@ -134,6 +134,5 @@ These were optional extras in the specification and are **not** in this version:
 - Text-to-speech reading of reminders.
 - Home-screen widget.
 - PDF export and Telegram notifications.
-- Foreground service (skipped by decision).
 
 Also note: SMS alerts use the phone's normal SIM card, so standard operator rates may apply. This project uses Git; `CONTEXT.md` is the handoff file.
