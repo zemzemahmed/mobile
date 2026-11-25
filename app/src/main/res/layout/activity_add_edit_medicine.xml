@@ -57,14 +57,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_start_date"
-            android:inputType="date" />
+            android:focusable="false"
+            android:clickable="true"
+            android:cursorVisible="false" />
 
-        <EditText
-            android:id="@+id/endDateInput"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_end_date"
-            android:inputType="date" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <EditText
+                android:id="@+id/endDateInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/hint_end_date"
+                android:focusable="false"
+                android:clickable="true"
+                android:cursorVisible="false" />
+
+            <Button
+                android:id="@+id/clearEndDateButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clear_end_date" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/stockInput"

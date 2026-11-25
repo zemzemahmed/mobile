@@ -18,8 +18,9 @@
     <string name="hint_strength">Strength (e.g. 500 mg)</string>
     <string name="hint_form">Form</string>
     <string name="hint_notes">Notes (optional)</string>
-    <string name="hint_start_date">Start date (YYYY-MM-DD)</string>
-    <string name="hint_end_date">End date (YYYY-MM-DD, optional)</string>
+    <string name="hint_start_date">Start date (tap to choose)</string>
+    <string name="hint_end_date">End date (optional, tap to choose)</string>
+    <string name="clear_end_date">Clear</string>
     <string name="hint_stock">Pills in stock</string>
     <string name="active_label">Active (uncheck to pause)</string>
     <string name="alarms_title">Alarms</string>

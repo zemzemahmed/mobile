@@ -1,5 +1,6 @@
 package com.example.medireminder.ui.activity;
 
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.example.medireminder.util.AppExecutor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -70,8 +72,14 @@ public class AddEditMedicineActivity extends AppCompatActivity {
         medicineId = getIntent().getLongExtra(EXTRA_MEDICINE_ID, 0);
         dateFormat.setLenient(false);
 
+        // Dates are chosen with a calendar - no typing or keyboard format needed.
+        startDateInput.setOnClickListener(v -> showDatePicker(startDateInput));
+        endDateInput.setOnClickListener(v -> showDatePicker(endDateInput));
+        findViewById(R.id.clearEndDateButton).setOnClickListener(v -> endDateInput.setText(""));
+
         if (medicineId == 0) {
             setTitle(R.string.add_medicine_title);
+            startDateInput.setText(dateFormat.format(Calendar.getInstance().getTime()));
             addAlarmRow(8, 0, 1.0, null);   // one default alarm at 08:00, every day
         } else {
             setTitle(R.string.edit_medicine_title);
@@ -217,6 +225,29 @@ public class AddEditMedicineActivity extends AppCompatActivity {
 
         Toast.makeText(this, R.string.saved_message, Toast.LENGTH_SHORT).show();
         finish();
+    }
+
+    /** Opens a calendar and writes the chosen day as YYYY-MM-DD. */
+    private void showDatePicker(final EditText target) {
+        Calendar calendar = Calendar.getInstance();
+        String current = target.getText().toString().trim();
+        if (!current.isEmpty()) {
+            try {
+                calendar.setTime(dateFormat.parse(current));
+            } catch (ParseException ignored) {
+                // Keep today's date if the stored value is not readable.
+            }
+        }
+
+        new DatePickerDialog(this,
+                (picker, year, month, dayOfMonth) -> {
+                    Calendar chosen = Calendar.getInstance();
+                    chosen.set(year, month, dayOfMonth);
+                    target.setText(dateFormat.format(chosen.getTime()));
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private long parseDateOrError(String value) {
