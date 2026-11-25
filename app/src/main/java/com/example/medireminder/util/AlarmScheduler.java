@@ -21,16 +21,16 @@ import java.util.Locale;
 /**
  * All AlarmManager work lives here.
  * Each alarm kind has its own request-code range so alarms never overwrite each other:
- * reminder = scheduleId, missed-check = 100000 + scheduleId, snooze = 200000 + scheduleId.
+ * reminder = scheduleId, missed-check = 100000 + scheduleId.
  */
 public final class AlarmScheduler {
 
     public static final String EXTRA_SCHEDULE_ID = "scheduleId";
     public static final String EXTRA_SCHEDULED_TIME = "scheduledTime";
-    public static final String EXTRA_IS_SNOOZE = "isSnooze";
 
     private static final int MISSED_OFFSET = 100000;
-    private static final int SNOOZE_OFFSET = 200000;
+    /** Backup check: the alarm screen itself times out after 5 seconds, this runs at 6. */
+    private static final long MISSED_DELAY_MS = 6000L;
 
     private AlarmScheduler() {
     }
@@ -85,7 +85,6 @@ public final class AlarmScheduler {
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra(EXTRA_SCHEDULE_ID, schedule.id);
         intent.putExtra(EXTRA_SCHEDULED_TIME, nextTime);
-        intent.putExtra(EXTRA_IS_SNOOZE, false);
         PendingIntent pending = PendingIntent.getBroadcast(context, (int) schedule.id, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextTime, pending);
@@ -96,33 +95,13 @@ public final class AlarmScheduler {
         if (manager == null || !canScheduleExact(context, manager)) {
             return;
         }
-        int delayMinutes = new PreferencesHelper(context).getAlertDelayMinutes();
-        long triggerAt = Math.max(scheduledTime + delayMinutes * 60000L,
-                System.currentTimeMillis() + 1000);
+        long triggerAt = System.currentTimeMillis() + MISSED_DELAY_MS;
 
         Intent intent = new Intent(context, com.example.medireminder.receiver.MissedReceiver.class);
         intent.putExtra(EXTRA_SCHEDULE_ID, scheduleId);
         intent.putExtra(EXTRA_SCHEDULED_TIME, scheduledTime);
         PendingIntent pending = PendingIntent.getBroadcast(context,
                 MISSED_OFFSET + (int) scheduleId, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending);
-    }
-
-    public static void scheduleSnooze(Context context, long scheduleId, long scheduledTime) {
-        AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (manager == null || !canScheduleExact(context, manager)) {
-            return;
-        }
-        int minutes = new PreferencesHelper(context).getSnoozeMinutes();
-        long triggerAt = System.currentTimeMillis() + minutes * 60000L;
-
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(EXTRA_SCHEDULE_ID, scheduleId);
-        intent.putExtra(EXTRA_SCHEDULED_TIME, scheduledTime);
-        intent.putExtra(EXTRA_IS_SNOOZE, true);
-        PendingIntent pending = PendingIntent.getBroadcast(context,
-                SNOOZE_OFFSET + (int) scheduleId, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending);
     }
@@ -136,10 +115,6 @@ public final class AlarmScheduler {
                 com.example.medireminder.receiver.MissedReceiver.class);
     }
 
-    public static void cancelSnooze(Context context, long scheduleId) {
-        cancel(context, SNOOZE_OFFSET + (int) scheduleId, AlarmReceiver.class);
-    }
-
     public static void cancelAlarmsForSchedules(Context context, List<Schedule> schedules) {
         if (schedules == null) {
             return;
@@ -147,7 +122,6 @@ public final class AlarmScheduler {
         for (Schedule schedule : schedules) {
             cancelReminder(context, schedule.id);
             cancelMissed(context, schedule.id);
-            cancelSnooze(context, schedule.id);
         }
     }
 

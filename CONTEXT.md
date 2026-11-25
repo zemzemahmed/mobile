@@ -155,3 +155,22 @@ Tests passed from spec checklist (numbers):
 ## 8. Spec test checklist (acceptance criteria — don't retype, just reference numbers)
 
 1 three alarms → 3 rows + 3 distinct alarms · 2 notification pill count + actions · 3 Taken logs/stock/cancels timer · 4 Snooze reschedules · 5 Ignored → MISSED + SMS · 6 same-time grouping · 7 edit cancels/recreates · 8 delete removes all · 9 reboot restores · 10 pause stops alarms · 11 deny SMS no crash · 12 low stock warning · 13 half pill · 14 rotation keeps form data.
+
+## 8. Latest change — full-screen alarm replaces notifications + snooze
+
+User request: when a dose is due, show a real alarm interface (not just a notification). It must offer **Taken**, or time out after **5 seconds**; on timeout it closes immediately, logs **MISSED**, and sends an SMS to caregivers. **Snooze is removed everywhere.**
+
+What changed:
+- New `ui/activity/AlarmActivity.java`: full-screen screen over the lock screen with dose text, a 5-second countdown, and one **Taken** button. On timeout it calls `DoseActionHelper.markMissedNow(...)` and finishes.
+- `AlarmReceiver` now calls `NotificationHelper.showAlarm(...)`: a high-priority `CATEGORY_ALARM` notification with a **full-screen intent** so `AlarmActivity` opens reliably on modern Android (plain `startActivity()` from a receiver is restricted on Android 10+).
+- `AndroidManifest.xml` adds `android.permission.USE_FULL_SCREEN_INTENT` (required for full-screen intents on targetSdk 34).
+- `NotificationHelper` keeps one high-importance channel, alarm sound/vibration, and a **Taken** action only; no Snooze action.
+- `DoseActionHelper`: added `markMissedNow()` (logs MISSED, cancels the backup missed timer, sends one grouped SMS to all caregivers). `takeDose()` no longer cancels a snooze.
+- `AlarmScheduler`: removed snooze scheduling/cancellation and `EXTRA_IS_SNOOZE`; backup missed check is now fixed at 6 seconds (after the 5-second UI timeout) as a safety net.
+- `MissedReceiver` skips logs already marked TAKEN or MISSED, so the backup cannot send a duplicate SMS.
+- Removed Snooze from `ActionReceiver`, its manifest action, Settings UI, `PreferencesHelper`, and all related strings. Settings now only has sound, caregivers, dark mode, large text, and rebuild alarms.
+- Updated `README.md` to describe the new 5-second full-screen alarm flow.
+
+Build/install status after this change: `BUILD SUCCESSFUL`, `adb install -r` -> `Success`, app launched. Pushed to `https://github.com/zemzemahmed/mobile.git` on branch `main`.
+
+User must retest: set a medicine alarm 1-2 minutes ahead, add a caregiver phone number, then confirm the full-screen alarm appears, **Taken** works, and doing nothing for 5 seconds produces Missed + SMS. There is no debug short-delay setting anymore.

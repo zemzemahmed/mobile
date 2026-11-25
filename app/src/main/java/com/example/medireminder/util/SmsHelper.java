@@ -24,18 +24,47 @@ public final class SmsHelper {
 
     public static void sendMissedAlert(Context context, Medicine medicine, Schedule schedule,
                                        long scheduledTime, List<Caregiver> caregivers) {
+        if (medicine == null || schedule == null) {
+            return;
+        }
+        List<Medicine> medicines = new ArrayList<>();
+        medicines.add(medicine);
+        List<Schedule> schedules = new ArrayList<>();
+        schedules.add(schedule);
+        sendMissedAlerts(context, medicines, schedules, scheduledTime, caregivers);
+    }
+
+    /** One SMS per caregiver, even when several doses were missed at the same time. */
+    public static void sendMissedAlerts(Context context, List<Medicine> medicines,
+                                        List<Schedule> schedules, long scheduledTime,
+                                        List<Caregiver> caregivers) {
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
             return; // permission was denied - the app simply does not send anything
         }
-        if (caregivers == null || caregivers.isEmpty() || medicine == null || schedule == null) {
+        if (caregivers == null || caregivers.isEmpty() || medicines == null || schedules == null
+                || medicines.isEmpty() || schedules.isEmpty()) {
             return;
         }
 
         String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(scheduledTime));
-        String message = "Reminder: " + medicine.name + " - " + formatNumber(schedule.pillsPerDose)
-                + " pill(s) planned at " + time + " were not confirmed.";
+        StringBuilder message = new StringBuilder("MISSED DOSE ALERT\n");
+        int count = Math.min(medicines.size(), schedules.size());
+        for (int i = 0; i < count; i++) {
+            Medicine medicine = medicines.get(i);
+            Schedule schedule = schedules.get(i);
+            if (medicine == null || schedule == null) {
+                continue;
+            }
+            message.append("- ").append(medicine.name)
+                    .append(" x").append(formatNumber(schedule.pillsPerDose))
+                    .append(" pill(s)\n");
+        }
+        message.append("Planned at ").append(time).append(". Not confirmed in time.");
+        sendToCaregivers(message.toString(), caregivers);
+    }
 
+    private static void sendToCaregivers(String message, List<Caregiver> caregivers) {
         SmsManager smsManager = SmsManager.getDefault();
         ArrayList<String> parts = smsManager.divideMessage(message);
         for (Caregiver caregiver : caregivers) {

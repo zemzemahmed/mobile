@@ -8,21 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 
 import androidx.core.app.NotificationCompat;
 
 import com.example.medireminder.R;
-import com.example.medireminder.data.entity.Medicine;
-import com.example.medireminder.data.entity.Schedule;
-import com.example.medireminder.data.repository.MedicineRepository;
 import com.example.medireminder.receiver.ActionReceiver;
+import com.example.medireminder.ui.activity.AlarmActivity;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
-/** Builds the reminder notification and its Taken / Snooze actions. */
+/** Builds the alarm notification and its full-screen Take/Missed screen. */
 public final class NotificationHelper {
 
     public static final String CHANNEL_ID = "medireminder_reminders";
@@ -37,9 +31,9 @@ public final class NotificationHelper {
         }
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "Medication reminders",
+                "Medication alarms",
                 NotificationManager.IMPORTANCE_HIGH);
-        channel.setDescription("Reminders to take your medication");
+        channel.setDescription("Full-screen alarms to take your medication");
         channel.enableVibration(true);
         NotificationManager manager = context.getSystemService(NotificationManager.class);
         if (manager != null) {
@@ -47,57 +41,44 @@ public final class NotificationHelper {
         }
     }
 
-    /** Called on a background thread (it reads Room). */
-    public static void showReminder(Context context, List<Schedule> doses, long scheduledTime) {
-        if (doses == null || doses.isEmpty()) {
+    /** Called when an alarm fires. The full-screen intent opens AlarmActivity even on the lock screen. */
+    public static void showAlarm(Context context, long[] scheduleIds, long scheduledTime, String doseText) {
+        if (scheduleIds == null || scheduleIds.length == 0) {
             return;
         }
 
-        MedicineRepository repository = new MedicineRepository(context);
-        long[] scheduleIds = new long[doses.size()];
-        StringBuilder text = new StringBuilder();
-        String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(scheduledTime));
-        text.append(time).append(": ");
-
-        for (int i = 0; i < doses.size(); i++) {
-            Schedule schedule = doses.get(i);
-            scheduleIds[i] = schedule.id;
-            Medicine medicine = repository.getMedicineById(schedule.medicineId);
-            String name = medicine == null ? "Medicine" : medicine.name;
-            if (i > 0) {
-                text.append(", ");
-            }
-            text.append(name).append(" x").append(formatNumber(schedule.pillsPerDose));
-        }
-
         int id = notificationId(scheduledTime);
+        Intent alarmIntent = new Intent(context, AlarmActivity.class);
+        alarmIntent.putExtra(AlarmActivity.EXTRA_SCHEDULE_IDS, scheduleIds);
+        alarmIntent.putExtra(AlarmActivity.EXTRA_SCHEDULED_TIME, scheduledTime);
+        alarmIntent.putExtra(AlarmActivity.EXTRA_DOSE_TEXT, doseText);
+        PendingIntent fullScreen = PendingIntent.getActivity(context, id, alarmIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         Intent takenIntent = new Intent(context, ActionReceiver.class).setAction(ActionReceiver.ACTION_TAKEN);
         takenIntent.putExtra(ActionReceiver.EXTRA_SCHEDULE_IDS, scheduleIds);
         takenIntent.putExtra(ActionReceiver.EXTRA_SCHEDULED_TIME, scheduledTime);
         PendingIntent taken = PendingIntent.getBroadcast(context, id,
                 takenIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        Intent snoozeIntent = new Intent(context, ActionReceiver.class).setAction(ActionReceiver.ACTION_SNOOZE);
-        snoozeIntent.putExtra(ActionReceiver.EXTRA_SCHEDULE_IDS, scheduleIds);
-        snoozeIntent.putExtra(ActionReceiver.EXTRA_SCHEDULED_TIME, scheduledTime);
-        PendingIntent snooze = PendingIntent.getBroadcast(context, id + 1,
-                snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        String savedSound = new PreferencesHelper(context).getRingtoneUri();
+        Uri sound = savedSound.isEmpty() ? Settings.System.DEFAULT_ALARM_ALERT_URI : Uri.parse(savedSound);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(context.getString(R.string.notification_title))
-                .setContentText(text.toString())
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentText(doseText == null ? "" : doseText.replace("\n", ", "))
+                .setContentIntent(fullScreen)
+                .setFullScreenIntent(fullScreen, true)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(Notification.CATEGORY_ALARM)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOngoing(true)
                 .setAutoCancel(false)
+                .setSound(sound)
+                .setVibrate(new long[]{0, 500, 500})
                 .addAction(android.R.drawable.checkbox_on_background,
-                        context.getString(R.string.action_taken), taken)
-                .addAction(android.R.drawable.ic_menu_revert,
-                        context.getString(R.string.action_snooze), snooze);
-
-        String ringtone = new PreferencesHelper(context).getRingtoneUri();
-        if (!ringtone.isEmpty()) {
-            builder.setSound(Uri.parse(ringtone));
-        }
+                        context.getString(R.string.action_taken), taken);
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -115,14 +96,7 @@ public final class NotificationHelper {
     }
 
     private static int notificationId(long scheduledTime) {
-        // One id per minute: doses at the same time replace each other -> one grouped notification.
+        // One id per minute: doses at the same time replace each other -> one alarm.
         return NOTIFICATION_TAG + (int) (scheduledTime / 60000);
-    }
-
-    private static String formatNumber(double value) {
-        if (value == Math.floor(value)) {
-            return String.valueOf((long) value);
-        }
-        return String.valueOf(value);
     }
 }

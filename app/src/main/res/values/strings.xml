@@ -52,7 +52,12 @@
     <!-- Notifications (Parts 6-7) -->
     <string name="notification_title">Time to take your medicine</string>
     <string name="action_taken">Taken</string>
-    <string name="action_snooze">Snooze 10 min</string>
+
+    <!-- Full-screen alarm (5-second timeout, no snooze) -->
+    <string name="alarm_title">TIME TO TAKE YOUR MEDICINE</string>
+    <string name="alarm_countdown">%1$d s left</string>
+    <string name="alarm_hint">Tap Taken now. If you do nothing, your caregivers will be alerted.</string>
+    <string name="alarm_timeout_note">When a dose is due, a full-screen alarm appears. Tap Taken within 5 seconds, or caregivers are alerted automatically.</string>
     <string name="permission_notifications_title">Notifications needed</string>
     <string name="permission_notifications_message">MediReminder needs notification permission to remind you about doses.</string>
     <string name="permission_sms_title">SMS permission needed</string>
@@ -96,12 +101,9 @@
     <string name="adherence_label">Adherence this week: %1$d%% (%2$d of %3$d doses)</string>
 
     <!-- Settings (Part 12) -->
-    <string name="hint_snooze">Snooze (minutes)</string>
-    <string name="hint_alert_delay">Missed-dose alert delay (minutes)</string>
     <string name="setting_alert_enabled">Send SMS to caregivers when a dose is missed</string>
     <string name="setting_dark_mode">Dark mode</string>
     <string name="setting_large_text">Large text</string>
-    <string name="setting_debug">Short delays for testing (1 minute)</string>
     <string name="setting_ringtone">Choose reminder sound</string>
     <string name="setting_reschedule">Rebuild all alarms</string>
     <!-- Medicine list actions (Part 13) -->

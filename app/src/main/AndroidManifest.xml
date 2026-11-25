@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:name=".MediReminderApp"
@@ -34,12 +35,16 @@
             android:exported="false"
             android:parentActivityName=".ui.activity.MainActivity" />
 
+        <activity
+            android:name=".ui.activity.AlarmActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MediReminder" />
+
         <receiver android:name=".receiver.AlarmReceiver" android:exported="false" />
         <receiver android:name=".receiver.MissedReceiver" android:exported="false" />
         <receiver android:name=".receiver.ActionReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="com.example.medireminder.ACTION_TAKEN" />
-                <action android:name="com.example.medireminder.ACTION_SNOOZE" />
             </intent-filter>
         </receiver>
         <receiver android:name=".receiver.BootReceiver" android:exported="true">
@@ -51,3 +56,4 @@
     </application>
 
 </manifest>
+

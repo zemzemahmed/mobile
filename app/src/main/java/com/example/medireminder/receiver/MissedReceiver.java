@@ -36,8 +36,9 @@ public class MissedReceiver extends BroadcastReceiver {
             DoseLogRepository logs = new DoseLogRepository(appContext);
 
             DoseLog log = logs.findDose(scheduleId, scheduledTime);
-            if (log != null && DoseLog.STATUS_TAKEN.equals(log.status)) {
-                return; // the user took it in time
+            if (log != null && (DoseLog.STATUS_TAKEN.equals(log.status)
+                    || DoseLog.STATUS_MISSED.equals(log.status))) {
+                return; // already handled by the alarm screen or a previous backup run
             }
 
             Schedule schedule = medicines.getScheduleById(scheduleId);

@@ -18,52 +18,12 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/snoozeLabel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:labelFor="@id/snoozeInput"
-                android:text="@string/hint_snooze"
-                android:textSize="15sp" />
-
-            <EditText
-                android:id="@+id/snoozeInput"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:importantForAutofill="no" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:id="@+id/alertDelayLabel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:labelFor="@id/alertDelayInput"
-                android:text="@string/hint_alert_delay"
-                android:textSize="15sp" />
-
-            <EditText
-                android:id="@+id/alertDelayInput"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:importantForAutofill="no" />
-        </LinearLayout>
+            android:layout_marginTop="8dp"
+            android:text="@string/alarm_timeout_note"
+            android:textSize="15sp" />
 
         <Switch
             android:id="@+id/alertEnabledSwitch"
@@ -82,12 +42,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/setting_large_text" />
-
-        <Switch
-            android:id="@+id/debugSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/setting_debug" />
 
         <Button
             android:id="@+id/ringtoneButton"
