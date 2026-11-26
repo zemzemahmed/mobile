@@ -9,13 +9,9 @@ import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
 import com.example.medireminder.data.repository.DoseLogRepository;
 import com.example.medireminder.data.repository.MedicineRepository;
-import com.example.medireminder.service.AlarmForegroundService;
 import com.example.medireminder.util.AlarmScheduler;
 import com.example.medireminder.util.AppExecutor;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import com.example.medireminder.util.DoseActionHelper;
 
 /** Backup fired after the alarm screen times out: makes sure the dose is logged MISSED. */
 public class MissedReceiver extends BroadcastReceiver {
@@ -58,9 +54,8 @@ public class MissedReceiver extends BroadcastReceiver {
                 logs.updateLogSync(log);
             }
 
-            String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
-                    .format(new Date(scheduledTime));
-            AlarmForegroundService.doseMissed(appContext, medicine.name + " at " + time);
+            // Same path as the alarm timeout: log MISSED and show one dismissible notification.
+            DoseActionHelper.markMissedNow(appContext, new long[]{scheduleId}, scheduledTime);
         });
     }
 }

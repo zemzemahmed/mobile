@@ -10,7 +10,6 @@ import android.text.format.DateFormat;
 import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
 import com.example.medireminder.data.repository.MedicineRepository;
-import com.example.medireminder.receiver.AlarmReceiver;
 import com.example.medireminder.ui.activity.AlarmActivity;
 import com.example.medireminder.ui.activity.MainActivity;
 
@@ -115,7 +114,15 @@ public final class AlarmScheduler {
     }
 
     public static void cancelReminder(Context context, long scheduleId) {
-        cancel(context, (int) scheduleId, AlarmReceiver.class);
+        // The scheduled alarm is an Activity PendingIntent, so cancel that same intent.
+        AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (manager == null) {
+            return;
+        }
+        Intent intent = new Intent(context, AlarmActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(context, (int) scheduleId, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        manager.cancel(pending);
     }
 
     public static void cancelMissed(Context context, long scheduleId) {

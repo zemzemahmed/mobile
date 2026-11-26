@@ -14,6 +14,7 @@ public class PreferencesHelper {
     private static final String KEY_NOTIFY_TITLE = "notify_title";
     private static final String KEY_NOTIFY_TEXT = "notify_text";
     private static final String KEY_NOTIFY_TIME = "notify_time";
+    private static final String KEY_LEGACY_CLEARED = "legacy_notifications_cleared";
 
     private final SharedPreferences prefs;
 
@@ -43,6 +44,14 @@ public class PreferencesHelper {
 
     public long getNotificationTime() {
         return prefs.getLong(KEY_NOTIFY_TIME, -1);
+    }
+
+    public boolean isLegacyCleared() {
+        return prefs.getBoolean(KEY_LEGACY_CLEARED, false);
+    }
+
+    public void markLegacyCleared() {
+        prefs.edit().putBoolean(KEY_LEGACY_CLEARED, true).apply();
     }
 
     public void saveNotification(String title, String text, long scheduledTime) {

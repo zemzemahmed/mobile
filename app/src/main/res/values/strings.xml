@@ -54,8 +54,10 @@
     <string name="action_taken">Taken</string>
     <string name="alarm_title">TIME TO TAKE YOUR MEDICINE</string>
     <string name="alarm_countdown">%1$d s left</string>
-    <string name="alarm_hint">Tap Taken within 15 seconds. If you do nothing, the dose is marked Missed and the notification stays in the shade.</string>
-    <string name="alarm_timeout_note">When a dose is due, a full-screen alarm appears. Tap Taken within 15 seconds; otherwise the dose is marked Missed and a persistent notification remains.</string>
+    <string name="alarm_hint">Tap Taken within 15 seconds. If you do nothing, the dose is marked Missed and a notification is shown.</string>
+    <string name="alarm_timeout_note">When a dose is due, a full-screen alarm with sound appears. Tap Taken within 15 seconds; otherwise the dose is marked Missed and a notification you can swipe away is shown.</string>
+    <string name="missed_notification_title">MISSED DOSE</string>
+    <string name="missed_notification_text">A dose was missed. Swipe this notification away when you have read it.</string>
     <string name="permission_notifications_title">Notifications needed</string>
     <string name="permission_notifications_message">MediReminder needs notification permission to remind you about doses.</string>
     <string name="permission_overlay_title">Show alarm on top</string>

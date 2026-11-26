@@ -7,7 +7,6 @@ import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
 import com.example.medireminder.data.repository.DoseLogRepository;
 import com.example.medireminder.data.repository.MedicineRepository;
-import com.example.medireminder.service.AlarmForegroundService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,7 +55,8 @@ public final class DoseActionHelper {
 
                 AlarmScheduler.cancelMissed(context, scheduleId);
             }
-            AlarmForegroundService.doseTaken(context);
+            AlarmController.stopOnly();
+            NotificationHelper.cancelMissed(context);
         });
     }
 
@@ -95,7 +95,9 @@ public final class DoseActionHelper {
 
             String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
                     .format(new Date(scheduledTime));
-            AlarmForegroundService.doseMissed(context, joinNames(names) + " at " + time);
+            String text = joinNames(names) + " at " + time;
+            AlarmController.stopOnly();
+            NotificationHelper.showMissedNotification(context, text);
         });
     }
 

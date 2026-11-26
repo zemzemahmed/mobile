@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.example.medireminder.data.entity.Medicine;
 import com.example.medireminder.data.entity.Schedule;
 import com.example.medireminder.data.repository.MedicineRepository;
-import com.example.medireminder.service.AlarmForegroundService;
+import com.example.medireminder.util.AlarmController;
 import com.example.medireminder.util.AlarmScheduler;
 import com.example.medireminder.util.AppExecutor;
 
@@ -59,8 +59,8 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
             text.append("\nat ").append(time);
 
-            // The persistent foreground service opens the alarm screen over other apps.
-            AlarmForegroundService.fireAlarm(appContext, scheduleIds, scheduledTime, text.toString());
+            // One controller owns the sound, countdown and interface for this alarm.
+            AlarmController.start(appContext, scheduleIds, scheduledTime, text.toString());
 
             // Backup in case the alarm screen is closed before it can handle the timeout.
             AlarmScheduler.scheduleMissedCheck(appContext, scheduleId, scheduledTime);
